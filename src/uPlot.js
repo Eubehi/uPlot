@@ -1675,34 +1675,22 @@ export default function uPlot(opts, data, then) {
 		} = s._paths;
 
 		width = roundDec(width * pxRatio, 3);
-
-		let boundsClip = null;
-		let offset = (width % 2) / 2;
-
-		if (_points && fillStyle == null)
-			fillStyle = width > 0 ? "#fff" : strokeStyle;
-
-		let _pxAlign = s.pxAlign == 1 && offset > 0;
-
-		_pxAlign && ctx.translate(offset, offset);
-
-		if (!_points) {
-			let lft = plotLft - width / 2,
-				top = plotTop - width / 2,
-				wid = plotWid + width,
-				hgt = plotHgt + width;
-
-			boundsClip = new Path2D();
-			boundsClip.rect(lft, top, wid, hgt);
-		}
-
 		// the points pathbuilder's gapsClip is its boundsClip, since points dont need gaps clipping, and bounds depend on point size
-		if (_points)
+		if (_points) {
+			if (fillStyle == null) fillStyle = width > 0 ? "#fff" : strokeStyle;
 			strokeFill(strokeStyle, width, s.dash, s.cap, fillStyle, stroke, fill, flags, gapsClip);
-		else
+		} else {
+			let offset = (width % 2) / 2;
+			let _pxAlign = s.pxAlign == 1 && offset > 0;
+			_pxAlign && ctx.translate(offset, offset);
+
+			const boundsClip = new Path2D();
+			boundsClip.rect(plotLft - width / 2, plotTop - width / 2, plotWid + width, plotHgt + width);
+
 			fillStroke(si, strokeStyle, width, s.dash, s.cap, fillStyle, stroke, fill, flags, boundsClip, gapsClip);
 
-		_pxAlign && ctx.translate(-offset, -offset);
+			_pxAlign && ctx.translate(-offset, -offset);
+		}
 	}
 
 	function fillStroke(si, strokeStyle, lineWidth, lineDash, lineCap, fillStyle, strokePath, fillPath, flags, boundsClip, gapsClip) {

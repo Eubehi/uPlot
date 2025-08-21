@@ -1,4 +1,4 @@
-import { orient, rectH, BAND_CLIP_FILL, BAND_CLIP_STROKE } from './utils';
+import { orient, BAND_CLIP_FILL, BAND_CLIP_STROKE } from './utils';
 import { roundDec, PI } from '../utils';
 
 // TODO: drawWrap(seriesIdx, drawPoints) (save, restore, translate, clip)
@@ -10,28 +10,26 @@ export function points(opts) {
 		return orient(u, seriesIdx, (series, dataX, dataY, scaleX, scaleY, valToPosX, valToPosY, xOff, yOff, xDim, yDim, moveTo, lineTo, rect, arc, bezier) => {
 			let { pxRound, points } = series;
 
-			const width = roundDec(points.width * pxRatio, 3);
-			const size = roundDec(points.size * pxRatio, 3);
-
-			let rad = (points.size - points.width) / 2 * pxRatio;
-			let dia = roundDec(rad * 2, 3);
+			const width = roundDec(points.width * pxRatio, 0);
+			const size = roundDec(points.size * pxRatio, 0);
+			const offset = (size % 2) / 2;
 
 			let fill = new Path2D();
 			let clip = new Path2D();
 
 			let { left: lft, top: top, width: wid, height: hgt } = u.bbox;
 
-			rectH(clip,
-				lft - dia,
-				top - dia,
-				wid + dia * 2,
-				hgt + dia * 2,
+			clip.rect(
+				lft - size,
+				top - size,
+				wid + size * 2,
+				hgt + size * 2,
 			);
 
 			const drawPoint = pi => {
 				if (dataY[pi] != null) {
-					let x = pxRound(valToPosX(dataX[pi], scaleX, xDim, xOff));
-					let y = pxRound(valToPosY(dataY[pi], scaleY, yDim, yOff));
+					let x = pxRound(valToPosX(dataX[pi], scaleX, xDim, xOff) - offset) + offset;
+					let y = pxRound(valToPosY(dataY[pi], scaleY, yDim, yOff) - offset) + offset;
 
 					points.form.draw(fill, x, y, size, width, moveTo, lineTo, arc, bezier);
 				}
