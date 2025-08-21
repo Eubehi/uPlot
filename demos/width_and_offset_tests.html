@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Testing Width and offsets</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="../dist/uPlot.min.css">
+	<style>
+		.u-legend {
+			color: #c7d0d9;
+		}
+
+		section {
+			display: inline-block;
+			vertical-align: top;
+			margin: 8px;
+			box-shadow: 0px 0px 8px 4px #ccc;
+			background-color: #141619;
+		}
+
+		h3 {
+			text-align: center;
+			padding: 10px;
+			background: #E1F5FE;
+			margin: 0;
+		}
+
+		.uplot {
+			margin: 20px 0;
+		}
+
+		.u-select {
+			background: rgba(255, 255, 255, 0.07);
+		}
+	</style>
+</head>
+
+<body>
+	<script src="../dist/uPlot.iife.js"></script>
+	<script>
+		const SQUARE = {
+			name: 'SQUARE',
+			draw: (path, centerX, centerY, size, strokeWidth, moveTo, lineTo, arc, bezier) => {
+				const dist = (size-strokeWidth) / 2;
+				moveTo(path, centerX - dist, centerY - dist);
+				lineTo(path, centerX + dist, centerY - dist);
+				lineTo(path, centerX + dist, centerY + dist);
+				lineTo(path, centerX - dist, centerY + dist);
+				path.closePath();
+			},
+		}
+		const PALETTE_LIGHT = ['#005A8D', '#B71C1C', '#2E7D32', '#6A1B9A', '#EF6C00', '#00838F'];
+		const PALETTE_DARK = ['#FFFF00', '#00BFFF', '#7FFF00', '#FF00FF', '#FFA500', '#00FFFF'];
+		const linear_data = [
+			[0, 496, 996, 1504, 2004, 2500, 2996, 3496, 4004, 4504, 5000, 7000],
+			[0, 496, 1004, 1496, 2004, 2500, 2996, 3504, 3996, 4504, 5000, 0],
+			[0, 496, 1004, 1496, 2004, 2300, 2796, 3304, 3796, 4304, 4800, 0],
+			[0, 496, 1004, 1496, 2004, 2100, 2596, 3104, 3596, 4104, 4600, 0],
+			[0, 496, 1004, 1496, 2004, 1900, 2396, 2904, 3396, 3904, 4400, 0],
+		]
+
+		function initSection(title) {
+			const h3 = document.createElement('h3');
+			h3.textContent = title;
+			const section = document.createElement('section');
+			section.appendChild(h3);
+			document.body.appendChild(section);
+			return section;
+		}
+
+		function genOptsLinear(sync, showPath, ovr) {
+			return uPlot.assign({}, {
+				width: 800,
+				height: 267,
+				cursor: { points: { fill: (self, si) => PALETTE_DARK[3], size: 3, }, lock: true, sync: { key: sync, setSeries: true, }, },
+				scales: {
+					x: { time: false, },
+				},
+				axes: [
+					{ stroke: "#c7d0d9", grid: { show: true, width: 1 / devicePixelRatio, stroke: "#2c3235", }, ticks: { show: true, width: 1 / devicePixelRatio, stroke: "#2c3235", }, },
+					{ scale: 'y', size: 100, side: 3, stroke: "#c7d0d9", grid: { show: true, width: 1 / devicePixelRatio, stroke: "#2c3235", }, ticks: { show: true, width: 1 / devicePixelRatio, stroke: "#2c3235", }, }
+				],
+				series: [
+					{},
+					{ label: 'S8 W2', stroke: PALETTE_DARK[2], scale: 'y', paths: showPath ? uPlot.linear : () => null, points: { fill: '#0000', size: 8, width: 2, form: SQUARE, }, },
+					{ label: 'S8 W1', stroke: PALETTE_DARK[1], scale: 'y', paths: showPath ? uPlot.linear : () => null, points: { fill: '#0000', size: 8, width: 1, form: SQUARE, }, },
+					{ label: 'S7 W2', stroke: PALETTE_DARK[4], scale: 'y', paths: showPath ? uPlot.linear : () => null, points: { fill: '#0000', size: 7, width: 2, form: SQUARE, }, },
+					{ label: 'S7 W1', stroke: PALETTE_DARK[5], scale: 'y', paths: showPath ? uPlot.linear : () => null, points: { fill: '#0000', size: 7, width: 1, form: SQUARE, }, },
+				]
+			}, ovr);
+		}
+
+		const linear1Sync = uPlot.sync('linear1')
+		new uPlot(genOptsLinear(linear1Sync, true, { pxAlign: 0 }), linear_data, initSection('Linear data & Horizontal & pxAlign = 0'));
+		new uPlot(genOptsLinear(linear1Sync, true, { pxAlign: 1 }), linear_data, initSection('Linear data & Horizontal & pxAlign = 1'));
+		new uPlot(genOptsLinear(linear1Sync, true, { scales: { x: { ori: 1 } }, pxAlign: 0 }), linear_data, initSection('Linear data & Vertical   & pxAlign = 0'));
+		new uPlot(genOptsLinear(linear1Sync, true, { scales: { x: { ori: 1 } }, pxAlign: 1 }), linear_data, initSection('Linear data & Vertical   & pxAlign = 1'));
+
+		const linear2Sync = uPlot.sync('linear2')
+		new uPlot(genOptsLinear(linear2Sync, false, { pxAlign: 0 }), linear_data, initSection('Linear data & Horizontal & pxAlign = 0'));
+		new uPlot(genOptsLinear(linear2Sync, false, { pxAlign: 1 }), linear_data, initSection('Linear data & Horizontal & pxAlign = 1'));
+		new uPlot(genOptsLinear(linear2Sync, false, { scales: { x: { ori: 1 } }, pxAlign: 0 }), linear_data, initSection('Linear data & Vertical   & pxAlign = 0'));
+		new uPlot(genOptsLinear(linear2Sync, false, { scales: { x: { ori: 1 } }, pxAlign: 1 }), linear_data, initSection('Linear data & Vertical   & pxAlign = 1'));
+
+		const cardinality = 15;
+		const data_log__linear_1 = Array(cardinality);
+		const data_log__linear_2 = Array(cardinality);
+		const data_log__linear_3 = Array(cardinality);
+		const data_log__linear_4 = Array(cardinality);
+		const data_log__log_1 = Array(cardinality);
+		const data_log__log_2 = Array(cardinality);
+		const data_log__log_3 = Array(cardinality);
+		const data_log__log_4 = Array(cardinality);
+		for (let i = 0; i < cardinality; i++) {
+			data_log__linear_1[i] = i;
+			data_log__linear_2[i] = i + 1;
+			data_log__linear_3[i] = i + 2;
+			data_log__linear_4[i] = i + 3;
+			data_log__log_1[i] = 10 ** (-22 + i * 3);
+			data_log__log_2[i] = data_log__log_1[i] * 10;
+			data_log__log_3[i] = data_log__log_1[i] * 100;
+			data_log__log_4[i] = data_log__log_1[i] * 1000;
+		}
+		const sups = '⁰¹²³⁴⁵⁶⁷⁸⁹'.split('');
+		const neg = '⁻';
+		const exponentialPrinter = val => {
+			if (val == null) return '';
+			const exp = Math.floor(Math.log10(val));
+			const absExp = Math.abs(exp);
+			const mult = val / (10 ** exp);
+			const supExp = ("" + absExp).split("").map(s => sups[+s]).join("");
+			return mult.toFixed(2) + "e" + (exp < 0 ? neg : '') + supExp;
+		}
+
+		function genOptsLog(sync, isXLog, isYLog, ovr) {
+			return uPlot.assign({}, {
+				width: 800,
+				height: 567,
+				cursor: { points: { fill: (self, si) => PALETTE_DARK[3], size: 4, }, lock: true, sync: { key: sync, setSeries: true, }, },
+				scales: {
+					x: { distr: isXLog ? 3 : 1, log: 10, time: false, },
+					y: { distr: isYLog ? 3 : 1, log: 10, },
+				},
+				axes: [
+					{ stroke: "#c7d0d9", grid: { width: 1 / devicePixelRatio, stroke: "#2c3235", }, ticks: { width: 1 / devicePixelRatio, stroke: "#2c3235", }, values: (u, splits) => splits.map(v => isXLog ? exponentialPrinter(v) : v), },
+					{ scale: 'y', size: 100, side: 3, stroke: "#c7d0d9", grid: { show: true, width: 1 / devicePixelRatio, stroke: "#2c3235", }, ticks: { width: 1 / devicePixelRatio, stroke: "#2c3235", }, values: (u, splits) => splits.map(v => isYLog ? exponentialPrinter(v) : v), },
+				],
+				series: [
+					{ value: (u, rawValue) => isXLog ? exponentialPrinter(rawValue) : rawValue, },
+					{ label: 'S8 W2', stroke: PALETTE_DARK[2], scale: 'y', paths: () => null, points: { fill: '#0000', size: 8, width: 2, form: SQUARE, }, value: (u, rawValue) => isYLog ? exponentialPrinter(rawValue) : rawValue, },
+					{ label: 'S8 W1', stroke: PALETTE_DARK[1], scale: 'y', paths: () => null, points: { fill: '#0000', size: 8, width: 1, form: SQUARE, }, value: (u, rawValue) => isYLog ? exponentialPrinter(rawValue) : rawValue, },
+					{ label: 'S7 W2', stroke: PALETTE_DARK[4], scale: 'y', paths: () => null, points: { fill: '#0000', size: 7, width: 2, form: SQUARE, }, value: (u, rawValue) => isYLog ? exponentialPrinter(rawValue) : rawValue, },
+					{ label: 'S7 W1', stroke: PALETTE_DARK[5], scale: 'y', paths: () => null, points: { fill: '#0000', size: 7, width: 1, form: SQUARE, }, value: (u, rawValue) => isYLog ? exponentialPrinter(rawValue) : rawValue, },
+				]
+			}, ovr);
+		}
+
+		const log1Sync = uPlot.sync('log1');
+		new uPlot(genOptsLog(log1Sync, false, true, { pxAlign: 0 }), [data_log__linear_1, data_log__log_1, data_log__log_2, data_log__log_3, data_log__log_4], initSection('Y Logarithmic data & pxAlign = 0'));
+		new uPlot(genOptsLog(log1Sync, false, true, { pxAlign: 1 }), [data_log__linear_1, data_log__log_1, data_log__log_2, data_log__log_3, data_log__log_4], initSection('Y Logarithmic data & pxAlign = 1'));
+		const log2Sync = uPlot.sync('log2');
+		new uPlot(genOptsLog(log2Sync, true, false, { pxAlign: 0 }), [data_log__log_1, data_log__linear_1, data_log__linear_2, data_log__linear_3, data_log__linear_4], initSection('X Logarithmic data & pxAlign = 0'));
+		new uPlot(genOptsLog(log2Sync, true, false, { pxAlign: 1 }), [data_log__log_1, data_log__linear_1, data_log__linear_2, data_log__linear_3, data_log__linear_4], initSection('X Logarithmic data & pxAlign = 1'));
+		const log3Sync = uPlot.sync('log3');
+		new uPlot(genOptsLog(log3Sync, true, true, { pxAlign: 0 }), [data_log__log_1, data_log__log_1, data_log__log_2, data_log__log_3, data_log__log_4], initSection('X&Y Logarithmic data & pxAlign = 0'));
+		new uPlot(genOptsLog(log3Sync, true, true, { pxAlign: 1 }), [data_log__log_1, data_log__log_1, data_log__log_2, data_log__log_3, data_log__log_4], initSection('X&Y Logarithmic data & pxAlign = 1'));
+	</script>
+</body>
+
+</html>
