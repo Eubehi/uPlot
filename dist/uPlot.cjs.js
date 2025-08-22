@@ -807,8 +807,10 @@ function elColor(el, background, borderColor) {
 
 	if (newColor != oldColor) {
 		colorCache.set(el, newColor);
-		el.style.background = background;
-		el.style.borderColor = borderColor;
+		for (const element of el.getElementsByTagName('path')) {
+			element.setAttribute('fill', background);
+			element.setAttribute('stroke', borderColor);
+		}
 	}
 }
 
@@ -1597,20 +1599,30 @@ const legendOpts = {
 function cursorPointShow(self, si) {
 	let o = self.cursor.points;
 
-	let pt = placeDiv();
+	const svgProp = self.series[si].points.form.svg;
+	const svgURI = 'http://www.w3.org/2000/svg';
+	const svg = document.createElementNS(svgURI, 'svg');
+	const path = document.createElementNS(svgURI, 'path');
+	svg.appendChild(path);
+	path.setAttribute('d', svgProp.outside);
+
 
 	let size = o.size(self, si);
-	setStylePx(pt, WIDTH, size);
-	setStylePx(pt, HEIGHT, size);
+	setStylePx(svg, WIDTH, size);
+	setStylePx(svg, HEIGHT, size);
 
 	let mar = size / -2;
-	setStylePx(pt, "marginLeft", mar);
-	setStylePx(pt, "marginTop", mar);
+	setStylePx(svg, "marginLeft", mar);
+	setStylePx(svg, "marginTop", mar);
 
 	let width = o.width(self, si, size);
-	width && setStylePx(pt, "borderWidth", width);
+	width && setStylePx(path, "stroke-width", width);
+	const dw = ceil(width/2);
+	const vb = svgProp.viewBox;
+	// Adapting the viewBox to the stroke's width
+	svg.setAttribute('viewBox', (vb.minX - dw)+' '+(vb.minY - dw)+' '+(vb.width + 2*dw)+' '+(vb.height + 2*dw));
 
-	return pt;
+	return svg;
 }
 
 function cursorPointFill(self, si) {
@@ -2408,6 +2420,11 @@ function points(opts) {
 
 const CIRCLE = {
 	name: 'CIRCLE',
+	svg: {
+		viewBox: { minX: 0, minY: 0, width: 100, height: 100 },
+		outside: 'M0 50A50 50 0 11100 50 50 50 0 110 50Z',
+		inside : 'M10 50A40 40 0 1090 50 40 40 0 1010 50Z'
+	},
 	draw: (path, centerX, centerY, size, strokeWidth, moveTo, lineTo, arc, bezier) => {
 		const dist = (size-strokeWidth) / 2;
 		moveTo(path, centerX + dist, centerY);
@@ -3919,7 +3936,7 @@ function uPlot(opts, data, then) {
 	function initCursorPt(s, si) {
 		let pt = points.show(self, si);
 
-		if (pt instanceof HTMLElement) {
+		if (pt instanceof SVGSVGElement) {
 			addClass(pt, CURSOR_PT);
 			addClass(pt, s.class);
 			elTrans(pt, -10, -10, plotWidCss, plotHgtCss);

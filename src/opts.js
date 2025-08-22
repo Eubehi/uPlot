@@ -413,20 +413,30 @@ export const legendOpts = {
 function cursorPointShow(self, si) {
 	let o = self.cursor.points;
 
-	let pt = placeDiv();
+	const svgProp = self.series[si].points.form.svg;
+	const svgURI = 'http://www.w3.org/2000/svg'
+	const svg = document.createElementNS(svgURI, 'svg');
+	const path = document.createElementNS(svgURI, 'path');
+	svg.appendChild(path);
+	path.setAttribute('d', svgProp.outside);
+
 
 	let size = o.size(self, si);
-	setStylePx(pt, WIDTH, size);
-	setStylePx(pt, HEIGHT, size);
+	setStylePx(svg, WIDTH, size);
+	setStylePx(svg, HEIGHT, size);
 
 	let mar = size / -2;
-	setStylePx(pt, "marginLeft", mar);
-	setStylePx(pt, "marginTop", mar);
+	setStylePx(svg, "marginLeft", mar);
+	setStylePx(svg, "marginTop", mar);
 
 	let width = o.width(self, si, size);
-	width && setStylePx(pt, "borderWidth", width);
+	width && setStylePx(path, "stroke-width", width);
+	const dw = ceil(width/2);
+	const vb = svgProp.viewBox;
+	// Adapting the viewBox to the stroke's width
+	svg.setAttribute('viewBox', (vb.minX - dw)+' '+(vb.minY - dw)+' '+(vb.width + 2*dw)+' '+(vb.height + 2*dw));
 
-	return pt;
+	return svg;
 }
 
 function cursorPointFill(self, si) {
